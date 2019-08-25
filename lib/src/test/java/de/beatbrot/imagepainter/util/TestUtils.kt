@@ -4,19 +4,17 @@ import android.view.MotionEvent
 import de.beatbrot.imagepainter.view.ImagePainterView
 
 fun ImagePainterView.startAt(x: Int, y: Int) {
-    onTouch(
-        this,
-        MotionEvent.obtain(1L, 1L, MotionEvent.ACTION_DOWN, x.toFloat(), y.toFloat(), 0)
-    )
+    onTouchEvent(motionEvent(MotionEvent.ACTION_DOWN, x, y))
 }
 
 fun ImagePainterView.moveTo(x: Int, y: Int) {
-    onTouch(
-        this,
-        MotionEvent.obtain(1L, 1L, MotionEvent.ACTION_MOVE, x.toFloat(), y.toFloat(), 0)
-    )
+    onTouchEvent(motionEvent(MotionEvent.ACTION_MOVE, x, y))
 }
 
 fun ImagePainterView.lift() {
-    onTouch(this, MotionEvent.obtain(1L, 1L, MotionEvent.ACTION_UP, 1F, 1F, 0))
+    onTouchEvent(motionEvent(MotionEvent.ACTION_UP, 1, 1))
+}
+
+private fun motionEvent(action: Int, x: Int, y: Int): MotionEvent {
+    return MotionEvent.obtain(1L, 1L, action, x.toFloat(), y.toFloat(), 0)
 }

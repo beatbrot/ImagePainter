@@ -11,14 +11,15 @@ import de.beatbrot.imagepainter.UndoStatusChangeListener;
 /**
  * This test only checks whether the API of the library is callable from Java. The class will never be ran.
  */
-public class JavaApiTest {
+@SuppressWarnings("unused")
+class JavaApiTest {
 
     private Context context;
 
-    public void intializeView() {
+    public void initializeView() {
         ImagePainterView painterView = new ImagePainterView(context);
 
-        painterView.setRedoStatusChangeListener((RedoStatusChangeListener) (boolx) -> System.out.println("Hello" + boolx));
+        painterView.setRedoStatusChangeListener((RedoStatusChangeListener) (bool) -> System.out.println("Hello" + bool));
         painterView.setUndoStatusChangeListener((UndoStatusChangeListener) (newProp) -> System.out.println("oYyy" + newProp));
 
         painterView.exportImage();
