@@ -35,11 +35,7 @@ class MainActivity : AppCompatActivity() {
         initColorButton(blackButton, Color.BLACK)
         initColorButton(redButton, Color.RED)
         initColorButton(blueButton, Color.BLUE)
-        resetButton.setOnClickListener {
-            val result = imagePainter.exportImage()
-            imagePainter.reset()
-            imagePainter.setImageBitmap(result)
-        }
+        resetButton.setOnClickListener { imagePainter.reset() }
 
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}

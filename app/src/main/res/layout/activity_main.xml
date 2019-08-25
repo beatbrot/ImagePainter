@@ -10,6 +10,7 @@
         android:id="@+id/imagePainter"
         android:layout_width="400dp"
         android:layout_height="400dp"
+        app:srcCompat="@drawable/ic_android_black_24dp"
         app:layout_constraintBottom_toTopOf="@+id/seekBar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
