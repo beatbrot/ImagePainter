@@ -16,18 +16,6 @@ class ImagePainterView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : AppCompatImageView(context, attrs, defStyleAttr), View.OnTouchListener {
 
-    var image: Bitmap? = null
-        set(value) {
-            field = value
-            bitmapCache = value?.copy(value.config, true)!!
-            canvas = Canvas(bitmapCache)
-            setImageBitmap(field)
-            undoStack.clear()
-            redoStack.clear()
-            undoStatusChangeListener?.undoStatusChanged(canUndo())
-            redoStatusChangeListener?.redoStatusChanged(canRedo())
-        }
-
     @get:ColorInt
     var strokeColor: Int
         get() = paint.color
@@ -60,13 +48,6 @@ class ImagePainterView @JvmOverloads constructor(
         xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_OVER)
     }
 
-    private lateinit var canvas: Canvas
-
-    private lateinit var bitmapCache: Bitmap
-
-    private val scale: Float
-        get() = width.toFloat() / bitmapCache.width
-
     internal val undoStack: Deque<DrawPath> = LinkedList()
 
     internal val redoStack: Deque<DrawPath> = LinkedList()
@@ -76,27 +57,31 @@ class ImagePainterView @JvmOverloads constructor(
     }
 
     override fun onTouch(v: View, event: MotionEvent): Boolean {
-        if (image == null) {
-            return false
-        }
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 redoStack.clear()
                 redoStatusChangeListener?.redoStatusChanged(canRedo())
                 val path = DrawPath(paint)
-                path.addDot(event.x / scale, event.y / scale)
+                path.addDot(event.x / scaleX, event.y / scaleY)
                 undoStack.addLast(path)
             }
             MotionEvent.ACTION_MOVE -> {
-                undoStack.last.addDot(event.x / scale, event.y / scale)
-                replayStack()
+                undoStack.last.addDot(event.x / scaleX, event.y / scaleY)
+                invalidate()
             }
             MotionEvent.ACTION_UP -> {
-                replayStack()
                 undoStatusChangeListener?.undoStatusChanged(canUndo())
+                invalidate()
             }
         }
         return true
+    }
+
+    override fun draw(canvas: Canvas?) {
+        super.draw(canvas)
+        for (path in undoStack) {
+            canvas?.drawPath(path)
+        }
     }
 
     fun canUndo() = undoStack.isNotEmpty()
@@ -105,14 +90,14 @@ class ImagePainterView @JvmOverloads constructor(
 
     fun undo() {
         redoStack.push(undoStack.removeLast())
-        replayStack()
+        invalidate()
         undoStatusChangeListener?.undoStatusChanged(canUndo())
         redoStatusChangeListener?.redoStatusChanged(canRedo())
     }
 
     fun redo() {
         undoStack.addLast(redoStack.pop())
-        replayStack()
+        invalidate()
         undoStatusChangeListener?.undoStatusChanged(canUndo())
         redoStatusChangeListener?.redoStatusChanged(canRedo())
     }
@@ -120,10 +105,9 @@ class ImagePainterView @JvmOverloads constructor(
     fun reset() {
         undoStack.clear()
         redoStack.clear()
+        invalidate()
         undoStatusChangeListener?.undoStatusChanged(canUndo())
         redoStatusChangeListener?.redoStatusChanged(canRedo())
-        clearImage()
-
     }
 
     fun setUndoStatusChangeListener(undoStatusChangeListener: UndoStatusChangeListener) {
@@ -152,24 +136,18 @@ class ImagePainterView @JvmOverloads constructor(
         })
     }
 
-    fun getResult() = bitmapCache
+    @JvmOverloads
+    fun exportImage(bitmapConfig: Bitmap.Config = Bitmap.Config.ARGB_8888): Bitmap {
+        val bitmap = Bitmap.createBitmap(
+            (width * scaleX).toInt(),
+            (height * scaleY).toInt(),
+            bitmapConfig
+        )
 
-    private fun clearImage() {
-        bitmapCache = image.copy()
-        canvas = Canvas(bitmapCache)
-        setImageBitmap(bitmapCache)
-    }
+        val canvas = Canvas(bitmap)
+        draw(canvas)
 
-    private fun replayStack() {
-        clearImage()
-        for (path in undoStack) {
-            canvas.drawPath(path)
-        }
-        setImageBitmap(bitmapCache)
-    }
-
-    private fun Bitmap?.copy(isMutable: Boolean = true): Bitmap {
-        return this?.copy(config, isMutable) ?: throw NullPointerException("Copying failed")
+        return bitmap
     }
 
     private fun Canvas.drawPath(path: DrawPath) {

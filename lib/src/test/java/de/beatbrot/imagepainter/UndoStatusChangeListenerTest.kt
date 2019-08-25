@@ -25,7 +25,7 @@ class UndoStatusChangeListenerTest {
     fun loadView() {
         val activity = Robolectric.buildActivity(Activity::class.java).get()
         imagePainter = ImagePainterView(activity)
-        imagePainter.image = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565)
+        imagePainter.setImageBitmap(Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565))
     }
 
     @Test

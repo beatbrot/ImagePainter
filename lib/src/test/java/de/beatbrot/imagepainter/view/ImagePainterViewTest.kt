@@ -50,7 +50,7 @@ class ImagePainterViewTest {
     @Test
     fun testDrawing() {
         imagePainter.apply {
-            image = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565)
+            setImageBitmap(Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565))
 
             startAt(10, 20)
             moveTo(20, 50)
@@ -67,7 +67,7 @@ class ImagePainterViewTest {
 
     @Test
     fun testUndo() {
-        imagePainter.image = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565)
+        imagePainter.setImageBitmap(Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565))
 
         imagePainter.apply {
             startAt(10, 20)
@@ -95,7 +95,7 @@ class ImagePainterViewTest {
 
     @Test
     fun testRedo() {
-        imagePainter.image = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565)
+        imagePainter.setImageBitmap(Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565))
 
         imagePainter.apply {
             startAt(10, 20)
