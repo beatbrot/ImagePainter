@@ -1,16 +1,8 @@
 package de.beatbrot.imagepainter.view
 
-internal sealed class OffsetScale {
-    abstract val scale: Float
-    abstract val offset: Float
-}
+internal sealed class OffsetScale(val scale: Float, val offset: Float)
 
-internal open class NoOffsetScale(override val scale: Float) : OffsetScale() {
-
-    override val offset = 0F
-}
-
+internal class XOffsetScale(scale: Float, offset: Float) : OffsetScale(scale, offset)
+internal class YOffsetScale(scale: Float, offset: Float) : OffsetScale(scale, offset)
+internal open class NoOffsetScale(scale: Float) : OffsetScale(scale, 0F)
 internal object NoScale : NoOffsetScale(1F)
-
-internal class XOffsetScale(override val scale: Float, override val offset: Float) : OffsetScale()
-internal class YOffsetScale(override val scale: Float, override val offset: Float) : OffsetScale()
