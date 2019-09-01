@@ -136,8 +136,8 @@ class ImagePainterView @JvmOverloads constructor(
         return when (val scale = calculateScale()) {
             is XOffsetScale -> {
                 when {
-                    xCord < scale.scaledOffset -> scale.scaledOffset
-                    xCord > (width - scale.scaledOffset) -> width - scale.scaledOffset
+                    xCord < scale.offset -> scale.offset
+                    xCord > (width - scale.offset) -> width - scale.offset
                     else -> xCord
                 }
             }
@@ -149,8 +149,8 @@ class ImagePainterView @JvmOverloads constructor(
         return when (val scale = calculateScale()) {
             is YOffsetScale -> {
                 when {
-                    yCord < scale.scaledOffset -> scale.scaledOffset
-                    yCord > (height - scale.scaledOffset) -> height - scale.scaledOffset
+                    yCord < scale.offset -> scale.offset
+                    yCord > (height - scale.offset) -> height - scale.offset
                     else -> yCord
                 }
             }
@@ -168,12 +168,12 @@ class ImagePainterView @JvmOverloads constructor(
         return when {
             ratioView > ratioDrawable -> {
                 val scale: Float = height / drawableHeight
-                val offset = (width - (drawableWidth * scale)) / 2 / scale
+                val offset = (width - (drawableWidth * scale)) / 2
                 XOffsetScale(scale, offset)
             }
             ratioDrawable > ratioView -> {
                 val scale = width / drawableWidth
-                val offset = (height - (drawableHeight * scale)) / 2 / scale
+                val offset = (height - (drawableHeight * scale)) / 2
                 YOffsetScale(scale, offset)
             }
             else -> NoOffsetScale(width / drawableWidth)

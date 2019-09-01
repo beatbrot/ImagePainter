@@ -23,8 +23,8 @@ internal data class DrawPath(val paint: Paint, val path: Path = Path()) {
         }
 
         var newPath = when (offsetScale) {
-            is XOffsetScale -> path.translate(-offsetScale.scaledOffset, 0F)
-            is YOffsetScale -> path.translate(0F, -offsetScale.scaledOffset)
+            is XOffsetScale -> path.translate(-offsetScale.offset, 0F)
+            is YOffsetScale -> path.translate(0F, -offsetScale.offset)
             else -> path
         }
 
