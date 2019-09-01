@@ -97,8 +97,6 @@ class ImagePainterView @JvmOverloads constructor(
     @JvmOverloads
     fun exportImage(config: Bitmap.Config = Bitmap.Config.ARGB_8888): Bitmap {
         val result = Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, config)
-        val scaleX: Float = drawable.intrinsicWidth / width.toFloat()
-        val scaleY: Float = drawable.intrinsicHeight / height.toFloat()
         val canvas = Canvas(result)
         drawable.draw(canvas)
 
@@ -138,8 +136,8 @@ class ImagePainterView @JvmOverloads constructor(
         return when (val scale = calculateScale()) {
             is XOffsetScale -> {
                 when {
-                    xCord < scale.offset -> scale.offset
-                    xCord > (width - scale.offset) -> width - scale.offset
+                    xCord < scale.scaledOffset -> scale.scaledOffset
+                    xCord > (width - scale.scaledOffset) -> width - scale.scaledOffset
                     else -> xCord
                 }
             }
@@ -164,19 +162,21 @@ class ImagePainterView @JvmOverloads constructor(
         val drawableHeight = drawable.intrinsicHeight.toFloat()
         val drawableWidth = drawable.intrinsicWidth.toFloat()
 
-        val scaledX: Float = width / drawableWidth
-        val scaledY: Float = height / drawableHeight
+        val ratioView: Float = width / height.toFloat()
+        val ratioDrawable: Float = drawableWidth / drawableHeight
 
         return when {
-            scaledX == scaledY -> NoOffsetScale((scaledX))
-            scaledX > scaledY -> {
-                val offset: Float = ((drawableWidth * scaledX) - (drawableWidth * scaledY)) / 2
-                XOffsetScale(1 / scaledY, offset)
+            ratioView > ratioDrawable -> {
+                val scale: Float = height / drawableHeight
+                val offset = (width - (drawableWidth * scale)) / 2 / scale
+                XOffsetScale(scale, offset)
             }
-            else -> {
-                val offset: Float = ((drawableHeight * scaledY) - (drawableHeight * scaledX)) / 2
-                YOffsetScale(1 / scaledX, offset)
+            ratioDrawable > ratioView -> {
+                val scale = width / drawableWidth
+                val offset = (height - (drawableHeight * scale)) / 2 / scale
+                YOffsetScale(scale, offset)
             }
+            else -> NoOffsetScale(width / drawableWidth)
         }
     }
 

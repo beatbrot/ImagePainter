@@ -22,22 +22,33 @@ internal data class DrawPath(val paint: Paint, val path: Path = Path()) {
             return this
         }
 
-        val newPath = Path()
-        val scaleMatrix = Matrix()
-        scaleMatrix.setScale(offsetScale.scale, offsetScale.scale)
-        path.transform(scaleMatrix, newPath)
-
-        if (offsetScale is XOffsetScale) {
-            scaleMatrix.setTranslate(-offsetScale.offset, 0F)
-            path.transform(scaleMatrix, newPath)
-        } else if (offsetScale is YOffsetScale) {
-            scaleMatrix.setTranslate(0F, -offsetScale.offset)
-            path.transform(scaleMatrix, newPath)
+        var newPath = when (offsetScale) {
+            is XOffsetScale -> path.translate(-offsetScale.scaledOffset, 0F)
+            is YOffsetScale -> path.translate(0F, -offsetScale.scaledOffset)
+            else -> path
         }
 
+        newPath = newPath.scale(1 / offsetScale.scale)
+
         val newPaint = Paint(paint)
-        newPaint.strokeWidth *= offsetScale.scale
+        newPaint.strokeWidth *= 1 / offsetScale.scale
 
         return copy(path = newPath, paint = newPaint)
+    }
+
+    private fun Path.translate(xOffset: Float, yOffset: Float): Path {
+        val newPath = Path()
+        val matrix = Matrix()
+        matrix.setTranslate(xOffset, yOffset)
+        transform(matrix, newPath)
+        return newPath
+    }
+
+    private fun Path.scale(factor: Float): Path {
+        val newPath = Path()
+        val matrix = Matrix()
+        matrix.setScale(factor, factor)
+        transform(matrix, newPath)
+        return newPath
     }
 }

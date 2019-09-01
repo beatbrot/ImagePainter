@@ -8,10 +8,10 @@
 
     <de.beatbrot.imagepainter.view.ImagePainterView
         android:id="@+id/imagePainter"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="400dp"
+        android:layout_height="400dp"
         android:background="@android:color/holo_red_dark"
-        android:src="@drawable/ic_blue_rect"
+        android:src="@mipmap/ic_launcher"
         app:layout_constraintBottom_toTopOf="@+id/seekBar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
