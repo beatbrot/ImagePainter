@@ -149,8 +149,8 @@ class ImagePainterView @JvmOverloads constructor(
         return when (val scale = calculateScale()) {
             is YOffsetScale -> {
                 when {
-                    yCord < scale.offset -> scale.offset
-                    yCord > (height - scale.offset) -> height - scale.offset
+                    yCord < scale.scaledOffset -> scale.scaledOffset
+                    yCord > (height - scale.scaledOffset) -> height - scale.scaledOffset
                     else -> yCord
                 }
             }
