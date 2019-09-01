@@ -2,6 +2,7 @@ package de.beatbrot.imagepainter.view
 
 import android.content.Context
 import android.graphics.*
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import androidx.annotation.ColorInt
@@ -54,6 +55,10 @@ class ImagePainterView @JvmOverloads constructor(
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal val redoStack: Deque<DrawPath> = LinkedList()
 
+    init {
+        scaleType = ScaleType.FIT_CENTER
+    }
+
     fun undo() {
         if (!canUndo()) {
             throw UnsupportedOperationException("Cannot undo, no operation on the stack")
@@ -80,9 +85,10 @@ class ImagePainterView @JvmOverloads constructor(
     @Suppress("MemberVisibilityCanBePrivate")
     fun canRedo() = redoStack.isNotEmpty()
 
+    @Suppress("UNNECESSARY_SAFE_CALL")
     fun reset() {
-        undoStack.clear()
-        redoStack.clear()
+        undoStack?.clear()
+        redoStack?.clear()
         invalidate()
         undoStatusChangeListener?.undoStatusChanged(canUndo())
         redoStatusChangeListener?.redoStatusChanged(canRedo())
@@ -90,10 +96,14 @@ class ImagePainterView @JvmOverloads constructor(
 
     @JvmOverloads
     fun exportImage(config: Bitmap.Config = Bitmap.Config.ARGB_8888): Bitmap {
-        val bitmap =
-            Bitmap.createBitmap((width * scaleX).toInt(), (height * scaleY).toInt(), config)
-        draw(Canvas(bitmap))
-        return bitmap
+        val result = Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, config)
+        val scaleX: Float = drawable.intrinsicWidth / width.toFloat()
+        val scaleY: Float = drawable.intrinsicHeight / height.toFloat()
+        val canvas = Canvas(result)
+        drawable.draw(canvas)
+
+        drawOverlay(canvas, calculateScale())
+        return result
     }
 
     fun setUndoStatusChangeListener(undoStatusChangeListener: UndoStatusChangeListener) {
@@ -101,6 +111,7 @@ class ImagePainterView @JvmOverloads constructor(
         this.undoStatusChangeListener?.undoStatusChanged(canUndo())
     }
 
+    @JvmSynthetic
     fun setUndoStatusChangeListener(undoStatusChangeListener: (Boolean) -> Unit) {
         setUndoStatusChangeListener(object : UndoStatusChangeListener {
             override fun undoStatusChanged(canUndo: Boolean) {
@@ -114,6 +125,7 @@ class ImagePainterView @JvmOverloads constructor(
         this.redoStatusChangeListener?.redoStatusChanged(canRedo())
     }
 
+    @JvmSynthetic
     fun setRedoStatusChangeListener(redoStatusChangeListener: (Boolean) -> Unit) {
         setRedoStatusChangeListener(object : RedoStatusChangeListener {
             override fun redoStatusChanged(canRedo: Boolean) {
@@ -122,10 +134,60 @@ class ImagePainterView @JvmOverloads constructor(
         })
     }
 
-    override fun draw(canvas: Canvas?) {
+    private fun normalizeX(xCord: Float): Float {
+        return when (val scale = calculateScale()) {
+            is XOffsetScale -> {
+                when {
+                    xCord < scale.offset -> scale.offset
+                    xCord > (width - scale.offset) -> width - scale.offset
+                    else -> xCord
+                }
+            }
+            else -> xCord
+        }
+    }
+
+    private fun normalizeY(yCord: Float): Float {
+        return when (val scale = calculateScale()) {
+            is YOffsetScale -> {
+                when {
+                    yCord < scale.offset -> scale.offset
+                    yCord > (height - scale.offset) -> height - scale.offset
+                    else -> yCord
+                }
+            }
+            else -> yCord
+        }
+    }
+
+    private fun calculateScale(): OffsetScale {
+        val drawableHeight = drawable.intrinsicHeight.toFloat()
+        val drawableWidth = drawable.intrinsicWidth.toFloat()
+
+        val scaledX: Float = width / drawableWidth
+        val scaledY: Float = height / drawableHeight
+
+        return when {
+            scaledX == scaledY -> NoOffsetScale((scaledX))
+            scaledX > scaledY -> {
+                val offset: Float = ((drawableWidth * scaledX) - (drawableWidth * scaledY)) / 2
+                XOffsetScale(1 / scaledY, offset)
+            }
+            else -> {
+                val offset: Float = ((drawableHeight * scaledY) - (drawableHeight * scaledX)) / 2
+                YOffsetScale(1 / scaledX, offset)
+            }
+        }
+    }
+
+    override fun draw(canvas: Canvas) {
         super.draw(canvas)
+        drawOverlay(canvas)
+    }
+
+    private fun drawOverlay(canvas: Canvas, scale: OffsetScale = NoScale) {
         for (path in undoStack) {
-            canvas?.drawPath(path)
+            canvas.drawPath(path.scale(scale))
         }
     }
 
@@ -135,13 +197,13 @@ class ImagePainterView @JvmOverloads constructor(
             MotionEvent.ACTION_DOWN -> {
                 redoStack.clear()
                 redoStatusChangeListener?.redoStatusChanged(canRedo())
-                val path = DrawPath(paint)
-                path.addDot(event.x / scaleX, event.y / scaleY)
+                val path = DrawPath(Paint(paint))
+                path.addDot(normalizeX(event.x), normalizeY(event.y))
                 undoStack.addLast(path)
                 performClick()
             }
             MotionEvent.ACTION_MOVE -> {
-                undoStack.last.addDot(event.x / scaleX, event.y / scaleY)
+                undoStack.last.addDot(normalizeX(event.x), normalizeY(event.y))
                 invalidate()
             }
             MotionEvent.ACTION_UP -> {
@@ -155,6 +217,11 @@ class ImagePainterView @JvmOverloads constructor(
     override fun performClick(): Boolean {
         super.performClick()
         return false
+    }
+
+    override fun setImageDrawable(drawable: Drawable?) {
+        super.setImageDrawable(drawable)
+        reset()
     }
 
     private fun Canvas.drawPath(path: DrawPath) {

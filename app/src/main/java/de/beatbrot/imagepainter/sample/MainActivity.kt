@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
         initColorButton(blackButton, Color.BLACK)
         initColorButton(redButton, Color.RED)
         initColorButton(blueButton, Color.BLUE)
-        resetButton.setOnClickListener { imagePainter.reset() }
+        resetButton.setOnClickListener { imagePainter.setImageBitmap(imagePainter.exportImage()) }
 
         seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}

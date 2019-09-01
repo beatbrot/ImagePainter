@@ -122,4 +122,22 @@ class ImagePainterViewTest {
         assertEquals(first, imagePainter.undoStack.first)
         assertEquals(last, imagePainter.undoStack.last)
     }
+
+    @Test
+    fun testExportImage() {
+        val bm = Bitmap.createBitmap(100, 130, Bitmap.Config.RGB_565)
+
+        imagePainter.apply {
+            setImageBitmap(bm)
+
+            startAt(25, 25)
+            moveTo(50, 50)
+            lift()
+        }
+
+        val result = imagePainter.exportImage(Bitmap.Config.RGB_565)
+
+        assertEquals(bm.width, result.width)
+        assertEquals(bm.height, result.height)
+    }
 }
