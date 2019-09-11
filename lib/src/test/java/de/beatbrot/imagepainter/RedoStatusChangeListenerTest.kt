@@ -7,7 +7,7 @@ import de.beatbrot.imagepainter.util.lift
 import de.beatbrot.imagepainter.util.moveTo
 import de.beatbrot.imagepainter.util.startAt
 import de.beatbrot.imagepainter.view.ImagePainterView
-import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -31,7 +31,7 @@ class RedoStatusChangeListenerTest {
     fun testListenerGetsTriggered() {
         val testListener = TestListener()
         imagePainter.setRedoStatusChangeListener(testListener)
-        Assert.assertEquals(false, testListener.canRedo)
+        assertEquals(false, testListener.canRedo)
 
         imagePainter.apply {
             startAt(10, 10)
@@ -39,15 +39,15 @@ class RedoStatusChangeListenerTest {
         }
 
         imagePainter.undo()
-        Assert.assertEquals(true, testListener.canRedo)
+        assertEquals(true, testListener.canRedo)
 
         imagePainter.apply {
             startAt(10, 10)
         }
 
-        Assert.assertEquals(false, testListener.canRedo)
+        assertEquals(false, testListener.canRedo)
         imagePainter.reset()
-        Assert.assertEquals(false, testListener.canRedo)
+        assertEquals(false, testListener.canRedo)
     }
 
     @Test
