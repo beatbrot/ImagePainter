@@ -9,41 +9,43 @@ import android.view.View
 import android.widget.SeekBar
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.activity_main.*
+import de.beatbrot.imagepainter.sample.databinding.ActivityMainBinding
 
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var v: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        v = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(v.root)
         initButtons()
 
-        imagePainter.setRedoStatusChangeListener { status -> redoButton.isEnabled = status }
-        imagePainter.setUndoStatusChangeListener { status -> undoButton.isEnabled = status }
+        v.imagePainter.setRedoStatusChangeListener { status -> v.redoButton.isEnabled = status }
+        v.imagePainter.setUndoStatusChangeListener { status -> v.undoButton.isEnabled = status }
     }
 
     private fun initButtons() {
-        undoButton.setOnClickListener {
-            imagePainter.undo()
+        v.undoButton.setOnClickListener {
+            v.imagePainter.undo()
         }
 
-        redoButton.setOnClickListener {
-            imagePainter.redo()
+        v.redoButton.setOnClickListener {
+            v.imagePainter.redo()
         }
 
-        initColorButton(blackButton, Color.BLACK)
-        initColorButton(redButton, Color.RED)
-        initColorButton(blueButton, Color.BLUE)
-        resetButton.setOnClickListener { imagePainter.setImageBitmap(imagePainter.exportImage()) }
+        initColorButton(v.blackButton, Color.BLACK)
+        initColorButton(v.redButton, Color.RED)
+        initColorButton(v.blueButton, Color.BLUE)
+        v.resetButton.setOnClickListener { v.imagePainter.setImageBitmap(v.imagePainter.exportImage()) }
 
-        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+        v.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
 
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
 
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                imagePainter.strokeWidth = progress.toFloat()
+                v.imagePainter.strokeWidth = progress.toFloat()
             }
         })
 
@@ -56,7 +58,7 @@ class MainActivity : AppCompatActivity() {
             bounds = Rect(0, 0, 20, 20)
             paint.color = color
         }
-        view.setOnClickListener { imagePainter.strokeColor = color }
+        view.setOnClickListener { v.imagePainter.strokeColor = color }
         view.visibility = View.VISIBLE
     }
 }
