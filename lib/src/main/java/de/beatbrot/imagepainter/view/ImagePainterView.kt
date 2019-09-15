@@ -9,6 +9,7 @@ import androidx.annotation.ColorInt
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.widget.AppCompatImageView
 import de.beatbrot.imagepainter.DrawPath
+import de.beatbrot.imagepainter.DrawStack
 import de.beatbrot.imagepainter.RedoStatusChangeListener
 import de.beatbrot.imagepainter.UndoStatusChangeListener
 import java.util.*
@@ -36,6 +37,16 @@ class ImagePainterView @JvmOverloads constructor(
             paint.strokeCap = value
         }
 
+    var drawStack: DrawStack
+        get() = DrawStack(LinkedList(undoStack), LinkedList(redoStack))
+        set(value) {
+            this.undoStack = value.undoStack
+            this.redoStack = value.redoStack
+            invalidate()
+            undoStatusChangeListener?.undoStatusChanged(canUndo())
+            redoStatusChangeListener?.redoStatusChanged(canRedo())
+        }
+
     private var undoStatusChangeListener: UndoStatusChangeListener? = null
 
     private var redoStatusChangeListener: RedoStatusChangeListener? = null
@@ -50,10 +61,12 @@ class ImagePainterView @JvmOverloads constructor(
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    internal val undoStack: Deque<DrawPath> = LinkedList()
+    internal var undoStack: Deque<DrawPath> = LinkedList()
+        private set
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    internal val redoStack: Deque<DrawPath> = LinkedList()
+    internal var redoStack: Deque<DrawPath> = LinkedList()
+        private set
 
     init {
         scaleType = ScaleType.FIT_CENTER
