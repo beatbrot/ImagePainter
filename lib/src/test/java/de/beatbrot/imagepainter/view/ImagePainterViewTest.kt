@@ -1,11 +1,11 @@
 package de.beatbrot.imagepainter.view
 
-import android.app.Activity
+import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Paint
-import android.os.Build.VERSION_CODES.JELLY_BEAN
-import android.os.Build.VERSION_CODES.P
+import androidx.test.core.app.ApplicationProvider.getApplicationContext
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import de.beatbrot.imagepainter.util.lift
 import de.beatbrot.imagepainter.util.moveTo
 import de.beatbrot.imagepainter.util.startAt
@@ -14,20 +14,16 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.Robolectric
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 
-@RunWith(RobolectricTestRunner::class)
-@Config(sdk = [JELLY_BEAN, P])
+@RunWith(AndroidJUnit4::class)
 class ImagePainterViewTest {
 
     private lateinit var imagePainter: ImagePainterView
 
     @Before
     fun loadView() {
-        val activity = Robolectric.buildActivity(Activity::class.java).get()
-        imagePainter = ImagePainterView(activity)
+        val context = getApplicationContext<Application>()
+        imagePainter = ImagePainterView(context)
     }
 
     @Test
