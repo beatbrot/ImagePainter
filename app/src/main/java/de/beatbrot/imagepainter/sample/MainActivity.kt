@@ -9,20 +9,36 @@ import android.view.View
 import android.widget.SeekBar
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import de.beatbrot.imagepainter.sample.databinding.ActivityMainBinding
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var v: ActivityMainBinding
+    private lateinit var viewModel: MainActivityViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         v = ActivityMainBinding.inflate(layoutInflater)
+        viewModel = ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
         setContentView(v.root)
         initButtons()
 
+        viewModel.drawStack.observe(this, Observer { newValue ->
+            if (newValue != null) {
+                v.imagePainter.drawStack = newValue
+            }
+        })
         v.imagePainter.setRedoStatusChangeListener { status -> v.redoButton.isEnabled = status }
         v.imagePainter.setUndoStatusChangeListener { status -> v.undoButton.isEnabled = status }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (!isFinishing) {
+            viewModel.drawStack.value = v.imagePainter.drawStack
+        }
     }
 
     private fun initButtons() {
@@ -37,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         initColorButton(v.blackButton, Color.BLACK)
         initColorButton(v.redButton, Color.RED)
         initColorButton(v.blueButton, Color.BLUE)
-        v.resetButton.setOnClickListener { v.imagePainter.setImageBitmap(v.imagePainter.exportImage()) }
+        v.resetButton.setOnClickListener { v.imagePainter.reset() }
 
         v.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
